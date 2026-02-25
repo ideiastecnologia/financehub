@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=FinanceHubDb;User Id=sa;Password=FinanceHub@2024;TrustServerCertificate=true
+      - Jwt__Key=FinanceHub-Super-Secret-Key-2024-Must-Be-At-Least-32-Characters-Long!
+      - Jwt__Issuer=FinanceHub
+      - Jwt__Audience=FinanceHubApp
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - financehub-network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+    networks:
+      - financehub-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=FinanceHub@2024
+      - MSSQL_PID=Express
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "FinanceHub@2024" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - financehub-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - financehub-network
+
+volumes:
+  sqlserver-data:
+  redis-data:
+
+networks:
+  financehub-network:
+    driver: bridge

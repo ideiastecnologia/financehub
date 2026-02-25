@@ -1,0 +1,22 @@
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY FinanceHub.sln .
+COPY src/FinanceHub.Domain/FinanceHub.Domain.csproj src/FinanceHub.Domain/
+COPY src/FinanceHub.Application/FinanceHub.Application.csproj src/FinanceHub.Application/
+COPY src/FinanceHub.Infrastructure/FinanceHub.Infrastructure.csproj src/FinanceHub.Infrastructure/
+COPY src/FinanceHub.API/FinanceHub.API.csproj src/FinanceHub.API/
+
+RUN dotnet restore
+
+COPY src/ src/
+RUN dotnet publish src/FinanceHub.API/FinanceHub.API.csproj -c Release -o /app/publish --no-restore
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app/publish .
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+ENTRYPOINT ["dotnet", "FinanceHub.API.dll"]
