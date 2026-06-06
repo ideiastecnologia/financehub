@@ -5,8 +5,8 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: financehub2acr.azurecr.io
-  IMAGE_NAME: financehub2
+  REGISTRY: financehubacr.azurecr.io
+  IMAGE_NAME: financehub
 
 jobs:
   build-and-deploy:
@@ -29,6 +29,6 @@ jobs:
       - name: Deploy to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
         with:
-          containerAppName: financehub2
-          resourceGroup: financehub2-rg
+          containerAppName: financehub
+          resourceGroup: financehub-rg
           imageToDeploy: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
