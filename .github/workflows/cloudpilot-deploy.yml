@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: financehubacr.azurecr.io
+  REGISTRY: financehubc45733a9acr.azurecr.io
   IMAGE_NAME: financehub
 
 jobs:
